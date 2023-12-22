@@ -17,13 +17,16 @@ df_train.head()
 
 sns.countplot(x = df_train['label'], color= 'green')
 
-train_dataset = df_train.sample(frac=0.8, random_state=0)
-test_dataset = df_train.drop(train_dataset.index)
+#train_dataset = df_train.sample(frac=0.8, random_state=0)
+#test_dataset = df_train.drop(train_dataset.index)
 
-train_label = train_dataset['label']
-test_label = test_dataset['label']
-train_dataset.drop('label',axis=1,inplace=True)
-test_dataset.drop('label',axis=1,inplace=True)
+#train_label = train_dataset['label']
+#test_label = test_dataset['label']
+#train_dataset.drop('label',axis=1,inplace=True)
+#test_dataset.drop('label',axis=1,inplace=True)
+train_label = df_train['label']
+df_train.drop('label',axis=1,inplace=True)
+
 
 def data_preprocessing(raw):
     num_images = raw.shape[0]
@@ -31,6 +34,48 @@ def data_preprocessing(raw):
     x_shaped_array = x_as_array.reshape(num_images, 28, 28, 1)
     out_x = x_shaped_array / 255
     return out_x
-final_train = data_preprocessing(train_dataset)
-final_test = data_preprocessing(test_dataset)
+#final_train = data_preprocessing(train_dataset)
+#final_test = data_preprocessing(test_dataset)
+final_train = data_preprocessing(df_train)
 final_train.shape
+
+
+
+model = models.Sequential()
+model.add(layers.Conv2D(64, (3, 3), activation='relu', input_shape=(28,28,1)))
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(Dropout(0.2))
+
+model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+model.add(Dropout(0.2))
+
+model.add(layers.Conv2D(256, (3, 3), activation='relu'))
+model.add(layers.MaxPooling2D((2, 2)))
+#model.add(Dropout(0.5))
+
+#model.add(layers.Conv2D(128, (3, 3), activation='relu'))
+#model.add(layers.MaxPooling2D((2, 2)))
+#model.add(Dropout(0.2))
+
+model.add(layers.Flatten())
+model.add(layers.Dense(128, activation='relu'))
+model.add(layers.Dense(10))
+model.summary()
+
+model.compile(optimizer='adam',
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+              metrics=['accuracy'])
+
+history = model.fit(final_train, train_label, epochs=10)
+#validation_data=(final_test, test_label)
+
+#plt.plot(history.history['accuracy'], label='accuracy')
+#plt.plot(history.history['val_accuracy'], label = 'val_accuracy')
+#plt.xlabel('Epoch')
+#plt.ylabel('Accuracy')
+#plt.ylim([0.5, 1])
+#plt.legend(loc='lower right')
+
+#test_loss, test_acc = model.evaluate(final_test,  test_label, verbose=2)
