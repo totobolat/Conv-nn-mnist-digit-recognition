@@ -79,3 +79,23 @@ history = model.fit(final_train, train_label, epochs=10)
 #plt.legend(loc='lower right')
 
 #test_loss, test_acc = model.evaluate(final_test,  test_label, verbose=2)
+#print(test_acc)
+
+df_test = pd.read_csv('/kaggle/input/digit-recognizer/test.csv')
+df_test.head()
+df_test_img = data_preprocessing(df_test)
+
+predictions = model.predict(df_test_img)
+score = tf.nn.softmax(predictions)
+
+sbmt_label = []
+for i in range(len(score)):
+    x = np.argmax(score[i])
+    sbmt_label.append(x)
+
+submit_res = pd.DataFrame(columns=['label'],data=sbmt_label)
+submit_res.head()
+submit_id = pd.DataFrame(columns=['ImageId'], data=(x for x in range(1,(len(submit_res))+1)))
+submit_id.tail()
+submit_final = pd.concat([submit_id,submit_res],axis=1)
+submit_final.to_csv('submission.csv',index=False)
